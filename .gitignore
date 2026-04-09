@@ -1,0 +1,4 @@
+.security-research/
+.start/
+**/node_modules/
+**/dist/
