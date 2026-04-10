@@ -9,7 +9,7 @@ metadata:
   author: ai.to.design
 ---
 
-# /prototype
+# Prototype
 
 Generate multiple visually distinct prototypes of a UI component, wrapped in a variant picker that lets you flip through them in the browser.
 
@@ -60,12 +60,12 @@ Build the prototype **natively in the project's framework**. The variant picker 
 
 Every prototype MUST include the variant picker script (`https://ai-to-design.com/prototype.min.js`) as the LAST element after the variants container, with a Subresource Integrity hash. Without it, the toolbar won't appear.
 
-| Framework        | Script tag                                                        |
-| ---------------- | ----------------------------------------------------------------- |
-| Next.js          | `<Script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossOrigin="anonymous" strategy="afterInteractive" />` (import from `next/script`) |
+| Framework        | Script tag                                                                                                                                                                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js          | `<Script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossOrigin="anonymous" strategy="afterInteractive" />` (import from `next/script`)   |
 | React (Vite/CRA) | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` in `index.html`, or use a `useEffect` to inject it |
-| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` in the component or page |
-| Plain HTML       | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` before `</body>` |
+| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` in the component or page                           |
+| Plain HTML       | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` before `</body>`                                   |
 
 **Content Security Policy:** If the project uses a CSP header, add `https://ai-to-design.com` to `script-src`. Remove it again after finalizing (step removes the script tag).
 
