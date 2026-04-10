@@ -1,5 +1,5 @@
 {
-  "name": "ai.to.interface-design",
+  "name": "ai-to-interface-design",
   "version": "1.0.0",
   "description": "Generate multiple visually distinct UI component prototypes with an in-browser variant picker to flip through them. Scans your project's design dependencies to match your design language.",
   "author": {

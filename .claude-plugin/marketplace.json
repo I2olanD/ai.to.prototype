@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "ai.to.interface-design",
+  "name": "ai-to-interface-design",
   "owner": {
     "name": "Roland Wallner"
   },
@@ -10,7 +10,7 @@
   },
   "plugins": [
     {
-      "name": "ai.to.interface-design",
+      "name": "ai-to-interface-design",
       "source": "./plugin",
       "description": "Generate multiple UI component prototypes with an in-browser variant picker"
     }

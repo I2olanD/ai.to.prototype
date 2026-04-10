@@ -3,6 +3,7 @@ name: prototype
 description: Generate multiple visually distinct UI component prototypes with an in-browser variant picker to flip through them. Scans your project's design dependencies to match your design language.
 user-invocable: true
 argument-hint: "[component description] [--variants N] [--style direction] [--framework name]"
+license: MIT
 metadata:
   contract-version: "1.0"
   author: ai.to.design

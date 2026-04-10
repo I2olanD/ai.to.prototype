@@ -1,0 +1,35 @@
+{
+  "name": "ai-to-interface-design",
+  "version": "1.0.0",
+  "description": "Generate multiple visually distinct UI component prototypes with an in-browser variant picker. Works with OpenCode and Claude Code.",
+  "author": "Roland Wallner",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "plugin/skills/"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "ui",
+    "prototype",
+    "design",
+    "variants",
+    "claude-code"
+  ],
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.4.0",
+    "@types/node": "^25.6.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  }
+}
