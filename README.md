@@ -46,6 +46,12 @@ The folder must contain `SKILL.md` and the `references/` subfolder.
 - [Claude Code](https://claude.com/claude-code) CLI, or
 - [OpenCode](https://opencode.ai)
 
+## Security
+
+The variant picker script is loaded from `https://ai-to-design.com/prototype.min.js` with a Subresource Integrity hash. If your project uses a Content Security Policy, add `https://ai-to-design.com` to `script-src` while prototyping. Remove it after finalizing your chosen variant.
+
+See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy.
+
 ## License
 
 MIT

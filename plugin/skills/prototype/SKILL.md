@@ -44,6 +44,8 @@ Generate the requested number of visually distinct prototypes. Follow all attrib
 
 4. **Production quality**: Every variant should be something a developer could ship. Proper semantic HTML, accessible markup, thoughtful spacing.
 
+5. **Safe output**: Never use `innerHTML`, `dangerouslySetInnerHTML`, or unquoted HTML attributes for dynamic content. Use framework-native text rendering (`{variable}` in JSX/Vue/Svelte, `textContent` in plain JS). Variant content must be presentational HTML and CSS only — no `<script>` tags, `<iframe>`, or inline event handlers.
+
 ## Output Format
 
 Build the prototype **natively in the project's framework**. The variant picker script discovers variants via `data-aitd-*` attributes (see [DOM Contract v1](references/dom-contract-v1.md)).
@@ -56,14 +58,16 @@ Build the prototype **natively in the project's framework**. The variant picker 
 
 **Variant picker script (required):**
 
-Every prototype MUST include the variant picker script (`https://ai-to-design.com/prototype.min.js`) as the LAST element after the variants container. Without it, the toolbar won't appear.
+Every prototype MUST include the variant picker script (`https://ai-to-design.com/prototype.min.js`) as the LAST element after the variants container, with a Subresource Integrity hash. Without it, the toolbar won't appear.
 
 | Framework        | Script tag                                                        |
 | ---------------- | ----------------------------------------------------------------- |
-| Next.js          | `<Script src="https://ai-to-design.com/prototype.min.js" strategy="afterInteractive" />` (import from `next/script`) |
-| React (Vite/CRA) | `<script src="https://ai-to-design.com/prototype.min.js"></script>` in `index.html`, or use a `useEffect` to inject it |
-| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/prototype.min.js"></script>` in the component or page |
-| Plain HTML       | `<script src="https://ai-to-design.com/prototype.min.js"></script>` before `</body>` |
+| Next.js          | `<Script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossOrigin="anonymous" strategy="afterInteractive" />` (import from `next/script`) |
+| React (Vite/CRA) | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` in `index.html`, or use a `useEffect` to inject it |
+| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` in the component or page |
+| Plain HTML       | `<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>` before `</body>` |
+
+**Content Security Policy:** If the project uses a CSP header, add `https://ai-to-design.com` to `script-src`. Remove it again after finalizing (step removes the script tag).
 
 ### Framework example (Next.js + Tailwind)
 
@@ -81,7 +85,12 @@ export default function PrototypeHeroSection() {
           {/* variant 2 — native JSX + Tailwind */}
         </div>
       </div>
-      <Script src="https://ai-to-design.com/prototype.min.js" strategy="afterInteractive" />
+      <Script
+        src="https://ai-to-design.com/prototype.min.js"
+        integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
     </>
   );
 }
@@ -89,7 +98,7 @@ export default function PrototypeHeroSection() {
 
 ### Plain HTML fallback
 
-When no framework is detected, generate a standalone HTML file with a minimal CSS reset (`box-sizing: border-box`, system font stack, `img { max-width: 100% }`), the variant container per [DOM Contract v1](references/dom-contract-v1.md), and the picker script before `</body>`.
+When no framework is detected, generate a standalone HTML file with a minimal CSS reset (`box-sizing: border-box`, system font stack, `img { max-width: 100% }`), the variant container per [DOM Contract v1](references/dom-contract-v1.md), and the picker script (with SRI hash) before `</body>`.
 
 ## Save & Preview
 
@@ -101,4 +110,10 @@ Ask the user which variant they prefer. Then offer two options:
 
 1. **Refine** — iterate on the chosen variant in the existing prototype page. Keep the variant picker structure (all variants, `data-aitd-variants` wrapper, and script tag) so the user can still compare.
 
-2. **Finalize** — extract only the chosen variant into a clean, standalone component/page. Remove: the variant picker script tag, all other variants, the `data-aitd-variants` wrapper, and all `data-aitd-*` attributes. The result is a production-ready component with no variant picker dependencies.
+2. **Finalize** — extract only the chosen variant into a clean, standalone component/page:
+   1. Remove all variants except the chosen one
+   2. Remove the `data-aitd-variants` wrapper element (keep its children)
+   3. Remove all `data-aitd-*` attributes from the remaining markup
+   4. Remove the variant picker script tag (`prototype.min.js`)
+   5. If the project uses a CSP header, remind the user to remove `https://ai-to-design.com` from `script-src`
+   6. **Verify**: search the file for any remaining `data-aitd` or `ai-to-design.com` strings — report and remove any found before declaring finalization complete

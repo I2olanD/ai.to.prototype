@@ -45,10 +45,10 @@ The canonical attribute schema for prototype.js variant discovery.
 
 ## Script Tag
 
-The `prototype.min.js` script is served from `https://ai-to-design.com/prototype.min.js`. Add it via a script tag — no file copy needed.
+The `prototype.min.js` script is served from `https://ai-to-design.com/prototype.min.js`. Add it via a script tag with a Subresource Integrity hash — no file copy needed.
 
 ```html
-<script src="https://ai-to-design.com/prototype.min.js"></script>
+<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>
 ```
 
 Always placed AFTER all variant containers.
@@ -76,7 +76,7 @@ Always placed AFTER all variant containers.
     <section class="v4">...</section>
   </div>
 </div>
-<script src="https://ai-to-design.com/prototype.min.js"></script>
+<script src="https://ai-to-design.com/prototype.min.js" integrity="sha384-3G+KXjkUOSYBDks/eO/Og2SUkI6Y7+rWsmUtaxcqVkUdipNwHWsm0PyGvwtv7kRs" crossorigin="anonymous"></script>
 ```
 
 ## Rules
@@ -84,5 +84,7 @@ Always placed AFTER all variant containers.
 1. Each variant MUST be fully self-contained — all CSS either inline or in a scoped `<style>` tag within the variant div
 2. Variant CSS class names MUST be prefixed per variant (e.g., `.v1-`, `.v2-`) to avoid conflicts
 3. Labels MUST be descriptive design-direction names (e.g., "Minimal", "Card Grid"), not ordinal labels
-4. The prototype.js script tag MUST be the last element, after all variants
+4. The prototype.js script tag MUST be the last element, after all variants, and MUST include the `integrity` and `crossorigin` attributes
 5. Multiple `data-aitd-variants` containers on one page work independently
+6. Variant content MUST be presentational HTML and scoped CSS only — no `<script>` tags, `<iframe>`, `<object>`, `<embed>`, or inline event handlers (`onclick`, `onerror`, etc.)
+7. `data-aitd-label` and `data-aitd-description` MUST be static, developer-authored strings — never populated from untrusted input or runtime variables
