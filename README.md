@@ -4,14 +4,26 @@ Generate multiple structurally distinct UI component prototypes with an in-brows
 
 ## Install
 
-### Claude Code
+### Quick Install
+
+```bash
+git clone https://github.com/I2olanD/ai.to.interface-design.git
+cd ai.to.interface-design
+./install.sh
+```
+
+Auto-detects Claude Code and OpenCode, installs for all found tools.
+
+### Manual Install
+
+#### Claude Code
 
 ```bash
 claude plugin marketplace add I2olanD/ai.to.interface-design
 claude plugin install ai-to-interface-design@ai-to-interface-design
 ```
 
-### OpenCode
+#### OpenCode
 
 Copy the `plugin/skills/prototype` folder from this repo into one of OpenCode's [skill directories](https://opencode.ai/docs/skills/):
 
