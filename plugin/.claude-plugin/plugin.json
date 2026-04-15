@@ -1,6 +1,6 @@
 {
   "name": "ai-to-prototype",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Generate multiple visually distinct UI component prototypes with an in-browser variant picker to flip through them. Scans your project's design dependencies to match your design language.",
   "author": {
     "name": "Roland Wallner"
