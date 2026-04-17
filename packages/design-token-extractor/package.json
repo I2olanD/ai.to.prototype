@@ -50,5 +50,14 @@
     "cli"
   ],
   "license": "MIT",
-  "author": "Roland Wallner"
+  "author": "Roland Wallner",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/I2olanD/ai.to.prototype.git",
+    "directory": "packages/design-token-extractor"
+  },
+  "homepage": "https://github.com/I2olanD/ai.to.prototype/tree/main/packages/design-token-extractor#readme",
+  "bugs": {
+    "url": "https://github.com/I2olanD/ai.to.prototype/issues"
+  }
 }
