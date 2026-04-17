@@ -46,9 +46,7 @@ import type {
   TokenSet,
 } from './types';
 
-// FIXME(phase-9): replace with real version injected at build time (tsup
-// `define`). Kept in sync with package.json manually for now.
-const CLI_VERSION = '0.1.0';
+const CLI_VERSION = typeof __DTE_VERSION__ !== 'undefined' ? __DTE_VERSION__ : '0.0.0-dev';
 
 // --------------------------------------------------------------------------
 // Schemas

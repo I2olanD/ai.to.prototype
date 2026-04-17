@@ -55,19 +55,39 @@ jobs:
           echo "bump=${BUMP}" >> "$GITHUB_OUTPUT"
           echo "Next version: v${NEW_VERSION} (${BUMP} bump)"
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
       - name: Update version files
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" .claude-plugin/marketplace.json
           sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" plugin/.claude-plugin/plugin.json
+          cd packages/design-token-extractor
+          npm version "${VERSION}" --no-git-tag-version --allow-same-version
 
       - name: Commit, tag, and push
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          git add .claude-plugin/marketplace.json plugin/.claude-plugin/plugin.json
+          git add .claude-plugin/marketplace.json plugin/.claude-plugin/plugin.json packages/design-token-extractor/package.json
           git commit -m "chore: release v${VERSION} [skip ci]"
           git tag "v${VERSION}"
           git push origin main --tags
+
+      - name: Install and build CLI
+        working-directory: packages/design-token-extractor
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish CLI to npm
+        working-directory: packages/design-token-extractor
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
 
       - name: Create GitHub Release
         env:

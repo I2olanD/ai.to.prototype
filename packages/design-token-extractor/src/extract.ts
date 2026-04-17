@@ -32,8 +32,9 @@
  *     current renderer does not surface. `TokenSet.breakpoint` is emitted
  *     as `{}` until the renderer is extended (out of scope for v1).
  *
- * `$metadata.version` is hardcoded to '0.1.0' with a FIXME for Phase 9 to
- * inject the real package version at build time (tsup `define`).
+ * `$metadata.version` is injected at build time from `package.json#version`
+ * via the `__DTE_VERSION__` constant defined in `tsup.config.ts`. Tests
+ * that run against source (no bundling) fall back to '0.0.0-dev'.
  */
 
 import { applyScores } from './apply-score';
@@ -59,8 +60,7 @@ import type {
   TokenSetMetadata,
 } from './types';
 
-// FIXME(phase-9): replace with real version injected at build time.
-const VERSION = '0.1.0';
+const VERSION = typeof __DTE_VERSION__ !== 'undefined' ? __DTE_VERSION__ : '0.0.0-dev';
 
 /**
  * Orchestrates the full extraction pipeline. Returns a fully-populated

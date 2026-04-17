@@ -2,6 +2,12 @@
 // Compile-time only: no runtime code, no imports from other src/ files.
 // Shapes mirror SDD §"Application Data Models" (spec 001).
 
+declare global {
+  // Injected by tsup at build time from package.json#version.
+  // Tests use a fallback via `typeof` check.
+  const __DTE_VERSION__: string;
+}
+
 export type Input =
   | { kind: 'url'; url: string }
   | { kind: 'file'; path: string };

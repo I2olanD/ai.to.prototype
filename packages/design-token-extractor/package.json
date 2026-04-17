@@ -1,6 +1,6 @@
 {
   "name": "design-token-extractor",
-  "version": "0.1.0",
+  "version": "1.0.6",
   "description": "Extract design tokens from any website into W3C DTCG JSON",
   "type": "module",
   "bin": {
@@ -18,7 +18,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
