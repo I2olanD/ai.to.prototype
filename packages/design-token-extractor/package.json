@@ -1,0 +1,51 @@
+{
+  "name": "design-token-extractor",
+  "version": "0.1.0",
+  "description": "Extract design tokens from any website into W3C DTCG JSON",
+  "type": "module",
+  "bin": {
+    "design-token-extractor": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "commander": "^11.0.0",
+    "ora": "^8.0.0",
+    "playwright": "^1.44.0",
+    "postcss": "^8.4.24",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.1",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "jsdom": "^29.0.2",
+    "tsup": "^8.0.0",
+    "typescript": "^5.2.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "keywords": [
+    "design-tokens",
+    "dtcg",
+    "css",
+    "design-system",
+    "extractor",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "Roland Wallner"
+}
