@@ -61,6 +61,7 @@ mkdir -p .design-tokens
 ```
 
 **Exit codes:**
+
 - `0` — success
 - `1` — user error (bad URL, missing file, conflicting flags)
 - `2` — extraction failure (timeout, auth wall, network)
@@ -82,6 +83,7 @@ The tool writes a W3C DTCG-compatible structure with these top-level keys:
 - `motion` — subcategories `duration`, `easing`
 
 Each token has:
+
 - `$value` — canonical value
 - `$type` — DTCG type tag
 - `$extensions["com.dte.usage"]` — `{ selectors: [...], count: N }`
@@ -101,14 +103,14 @@ Each token has:
 
 ## Failure modes
 
-| Stderr contains                         | Cause                                 | Recommendation to user                                         |
-|-----------------------------------------|---------------------------------------|----------------------------------------------------------------|
-| `File not found`                        | bad `--file` path                     | Check spelling / relative path                                 |
-| `Only http:// or https://`              | unsupported scheme                    | Use http(s) URL or `--file` for local                          |
-| `requires authentication`               | 401/403 auth wall                     | Save the rendered page locally, then `--file`                  |
-| `timed out after`                       | slow site                             | Retry with `--timeout 120`, or save locally and use `--file`   |
-| `Renderer crashed`                      | Playwright / Chromium issue           | Re-run `npx playwright install chromium`, retry                |
-| `ENEEDAUTH` / `EOTP`                    | user tried `npm publish` (not this)   | Out of scope                                                   |
+| Stderr contains            | Cause                               | Recommendation to user                                       |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------------ |
+| `File not found`           | bad `--file` path                   | Check spelling / relative path                               |
+| `Only http:// or https://` | unsupported scheme                  | Use http(s) URL or `--file` for local                        |
+| `requires authentication`  | 401/403 auth wall                   | Save the rendered page locally, then `--file`                |
+| `timed out after`          | slow site                           | Retry with `--timeout 120`, or save locally and use `--file` |
+| `Renderer crashed`         | Playwright / Chromium issue         | Re-run `npx playwright install chromium`, retry              |
+| `ENEEDAUTH` / `EOTP`       | user tried `npm publish` (not this) | Out of scope                                                 |
 
 ## Relation to `/prototype`
 
