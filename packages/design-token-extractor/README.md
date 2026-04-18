@@ -5,7 +5,7 @@ A one-command CLI that extracts a W3C DTCG-compatible design token set from any 
 ## Install
 
 ```bash
-npm i -g design-token-extractor
+npm i -g @ai.to.design/design-token-extractor
 npx playwright install chromium
 ```
 

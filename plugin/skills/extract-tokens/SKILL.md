@@ -31,7 +31,7 @@ command -v design-token-extractor >/dev/null 2>&1 && echo installed || echo miss
 ```
 
 - If `installed`: proceed.
-- If `missing`: prefer `npx design-token-extractor` for the invocation (no install required). On first run `npx` will fetch the package. Also remind the user that Playwright's Chromium must be installed once:
+- If `missing`: prefer `npx @ai.to.design/design-token-extractor` for the invocation (no install required). On first run `npx` will fetch the package. Also remind the user that Playwright's Chromium must be installed once:
 
   ```bash
   npx playwright install chromium
@@ -41,17 +41,17 @@ command -v design-token-extractor >/dev/null 2>&1 && echo installed || echo miss
 
 ## Invocation
 
-Build a single `design-token-extractor extract ...` (or `npx design-token-extractor extract ...`) command with the provided flags. Default output directory is `.design-tokens/` at the project root.
+Build a single `design-token-extractor extract ...` (or `npx @ai.to.design/design-token-extractor extract ...`) command with the provided flags. Default output directory is `.design-tokens/` at the project root.
 
 ```bash
 # URL, JSON (default)
-npx design-token-extractor extract https://example.com --out .design-tokens/tokens.json
+npx @ai.to.design/design-token-extractor extract https://example.com --out .design-tokens/tokens.json
 
 # Local file, CSS vars
-npx design-token-extractor extract --file ./reference.html --format css --out .design-tokens/tokens.css
+npx @ai.to.design/design-token-extractor extract --file ./reference.html --format css --out .design-tokens/tokens.css
 
 # Dark theme only, filter low-confidence
-npx design-token-extractor extract https://example.com --theme dark --min-confidence 0.5 --out .design-tokens/tokens.dark.json
+npx @ai.to.design/design-token-extractor extract https://example.com --theme dark --min-confidence 0.5 --out .design-tokens/tokens.dark.json
 ```
 
 **Create the output directory** before running if `--out` points to a subdir that doesn't exist:
