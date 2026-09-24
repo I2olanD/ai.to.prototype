@@ -76,10 +76,10 @@ The canonical attribute schema for prototype.js variant discovery.
 
 ## Script Tag
 
-The `prototype.min.js` script is served from `https://ai-to-design.com/runtime/1.6.5/prototype.min.js`. Add it via a script tag with a Subresource Integrity hash — no file copy needed.
+The `prototype.min.js` script is served from `https://ai-to-design.com/runtime/1.7.0/prototype.min.js`. Add it via a script tag with a Subresource Integrity hash — no file copy needed.
 
 ```html
-<script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossorigin="anonymous"></script>
+<script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossorigin="anonymous"></script>
 ```
 
 Always placed AFTER all variant containers.
@@ -107,7 +107,7 @@ Always placed AFTER all variant containers.
     <section class="v4">...</section>
   </div>
 </div>
-<script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossorigin="anonymous"></script>
+<script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossorigin="anonymous"></script>
 ```
 
 ## Rules

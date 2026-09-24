@@ -93,14 +93,14 @@ Build the prototype **natively in the project's framework**. The variant picker 
 
 **Variant picker script (required):**
 
-Every prototype MUST include the variant picker script (`https://ai-to-design.com/runtime/1.6.5/prototype.min.js`) as the LAST element after the variants container, with a Subresource Integrity hash. Without it, the toolbar won't appear.
+Every prototype MUST include the variant picker script (`https://ai-to-design.com/runtime/1.7.0/prototype.min.js`) as the LAST element after the variants container, with a Subresource Integrity hash. Without it, the toolbar won't appear.
 
 | Framework        | Script tag                                                                                                                                                                                                                         |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Next.js          | `<Script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossOrigin="anonymous" strategy="afterInteractive" />` (import from `next/script`)   |
-| React (Vite/CRA) | `<script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossorigin="anonymous"></script>` in `index.html`, or use a `useEffect` to inject it |
-| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossorigin="anonymous"></script>` in the component or page                           |
-| Plain HTML       | `<script src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js" integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um" crossorigin="anonymous"></script>` before `</body>`                                   |
+| Next.js          | `<Script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossOrigin="anonymous" strategy="afterInteractive" />` (import from `next/script`)   |
+| React (Vite/CRA) | `<script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossorigin="anonymous"></script>` in `index.html`, or use a `useEffect` to inject it |
+| Vue/Svelte/Astro | `<script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossorigin="anonymous"></script>` in the component or page                           |
+| Plain HTML       | `<script src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js" integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo" crossorigin="anonymous"></script>` before `</body>`                                   |
 
 **Content Security Policy:** If the project uses a CSP header, add `https://ai-to-design.com` to `script-src`. Remove it again after finalizing (step removes the script tag).
 
@@ -121,8 +121,8 @@ export default function PrototypeHeroSection() {
         </div>
       </div>
       <Script
-        src="https://ai-to-design.com/runtime/1.6.5/prototype.min.js"
-        integrity="sha384-AO+HioGDSWzoCpTyDSD9J8CkFAL1MgoFeiweG21ZP1qj2VlW4qsP22VydYyl54um"
+        src="https://ai-to-design.com/runtime/1.7.0/prototype.min.js"
+        integrity="sha384-a+WNjccfHG7OOsJY7mkexKLMN5WDN+i7b9CaKOqRCG5FOMF+2o0gkBELeFGaekqo"
         crossOrigin="anonymous"
         strategy="afterInteractive"
       />

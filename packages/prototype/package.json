@@ -1,6 +1,6 @@
 {
   "name": "@ai.to.design/prototype",
-  "version": "1.6.5",
+  "version": "1.7.0",
   "description": "In-browser variant-picker runtime for ai.to.prototype: renders a carousel toolbar to flip through generated UI component variants via data-aitd-* attributes.",
   "main": "dist/prototype.min.js",
   "unpkg": "dist/prototype.min.js",
