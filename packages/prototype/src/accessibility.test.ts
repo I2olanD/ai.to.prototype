@@ -11,7 +11,8 @@ function makeGroup(count: number): VariantGroup {
     element: document.createElement("div"),
     index: i + 1,
     label: `Variant ${i + 1}`,
-    description: null
+    description: null,
+    jigs: []
   }));
   return {
     container,
@@ -43,10 +44,26 @@ describe("announceVariant", () => {
       element: document.createElement("div"),
       index: 2,
       label: "Bold",
-      description: null
+      description: null,
+      jigs: []
     };
     announceVariant(region, variant, 4);
     expect(region.textContent).toBe("Showing variant: Bold (2 of 4)");
+  });
+
+  it("appends the description when present", () => {
+    const region = document.createElement("div");
+    const variant = {
+      element: document.createElement("div"),
+      index: 1,
+      label: "Split",
+      description: "Image left, copy right",
+      jigs: []
+    };
+    announceVariant(region, variant, 2);
+    expect(region.textContent).toBe(
+      "Showing variant: Split (1 of 2) — Image left, copy right"
+    );
   });
 });
 

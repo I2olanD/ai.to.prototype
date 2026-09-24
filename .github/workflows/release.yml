@@ -90,35 +90,24 @@ jobs:
           ( cd packages/design-token-extractor && bun pm version "${VERSION}" --no-git-tag-version --allow-same-version )
           ( cd packages/prototype && bun pm version "${VERSION}" --no-git-tag-version --allow-same-version )
 
-      # Rebuild the prototype runtime and repin its SRI hash in the skill so the
-      # served bytes and the hash the skill injects stay in lockstep.
-      - name: Build prototype and repin SRI hash
+      # Rebuild the prototype runtime and repin its versioned URL + SRI hash in
+      # the skill, so the served bytes and the tag the skill injects stay in
+      # lockstep. The skill files ship inside the npm package (prepublishOnly),
+      # which is where ai-to-design.com picks them up.
+      - name: Build prototype and repin URL + SRI hash
+        id: runtime
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           ( cd packages/prototype && bun run build )
           HASH="sha384-$(openssl dgst -sha384 -binary packages/prototype/dist/prototype.min.js | openssl base64 -A)"
           echo "prototype.min.js integrity: ${HASH}"
-          sed -i -E "s#sha384-[A-Za-z0-9+/=]+#${HASH}#g" \
+          sed -i -E \
+            -e "s#sha384-[A-Za-z0-9+/=]+#${HASH}#g" \
+            -e "s#https://ai-to-design\.com/runtime/[^/]+/prototype\.min\.js#https://ai-to-design.com/runtime/${VERSION}/prototype.min.js#g" \
             plugin/skills/prototype/SKILL.md \
             plugin/skills/prototype/references/dom-contract-v1.md
-
-      # Bookkeeping is skipped outright when the tag is already there, so a
-      # re-run of a release that died after tagging proceeds to publish instead
-      # of failing on `tag already exists` and wedging the version forever.
-      - name: Commit, tag, and push
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
-            echo "v${VERSION} is already committed and tagged; skipping bookkeeping."
-            exit 0
-          fi
-          git add .claude-plugin/marketplace.json plugin/.claude-plugin/plugin.json \
-            packages/design-token-extractor/package.json \
-            packages/prototype/package.json \
-            plugin/skills/prototype/SKILL.md \
-            plugin/skills/prototype/references/dom-contract-v1.md
-          git commit -m "chore: release v${VERSION} [skip ci]"
-          git tag "v${VERSION}"
-          git push origin main --tags
+          echo "integrity=${HASH}" >> "$GITHUB_OUTPUT"
 
       - name: Build CLI
         working-directory: packages/design-token-extractor
@@ -151,6 +140,72 @@ jobs:
           else
             npm publish --provenance
           fi
+
+      # ai-to-design.com serves /runtime/<version>/prototype.min.js from npm,
+      # hash-checked (I2olanD/ai.to.design, .github/workflows/prototype-runtime.yml).
+      # Needs WEBSITE_DISPATCH_TOKEN: a fine-grained PAT for that repo with
+      # Contents read/write, which repository dispatch requires.
+      - name: Register the runtime on ai-to-design.com
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          INTEGRITY: ${{ steps.runtime.outputs.integrity }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::WEBSITE_DISPATCH_TOKEN is not set; the runtime would never reach ai-to-design.com."
+            exit 1
+          fi
+          gh api repos/I2olanD/ai.to.design/dispatches \
+            -f event_type=prototype-released \
+            -f "client_payload[version]=${VERSION}" \
+            -f "client_payload[integrity]=${INTEGRITY}"
+
+      # The skill is pushed only once the URL it pins serves those exact bytes
+      # with CORS (required by crossorigin="anonymous"), so no one can install
+      # a skill whose picker script fails to load.
+      - name: Wait until the runtime is live
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          INTEGRITY: ${{ steps.runtime.outputs.integrity }}
+        run: |
+          URL="https://ai-to-design.com/runtime/${VERSION}/prototype.min.js"
+          for attempt in $(seq 1 90); do
+            if curl -fsS -H "Origin: https://example.com" -D headers.txt -o live.js "$URL" 2>/dev/null; then
+              LIVE="sha384-$(openssl dgst -sha384 -binary live.js | openssl base64 -A)"
+              if [ "$LIVE" = "$INTEGRITY" ] && grep -qi '^access-control-allow-origin:' headers.txt; then
+                echo "Live: ${URL}"
+                exit 0
+              fi
+              echo "Attempt ${attempt}: served ${LIVE}, CORS header: $(grep -ci '^access-control-allow-origin:' headers.txt)"
+            else
+              echo "Attempt ${attempt}: ${URL} not reachable yet"
+            fi
+            sleep 20
+          done
+          echo "::error::${URL} did not serve ${INTEGRITY} with CORS within 30 minutes. Check the prototype-runtime and deploy workflows in I2olanD/ai.to.design, then re-run this job."
+          exit 1
+
+      # Bookkeeping is skipped outright when the tag is already there, so a
+      # re-run of a release that died after tagging proceeds to publish instead
+      # of failing on `tag already exists` and wedging the version forever.
+      - name: Commit, tag, and push
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            echo "v${VERSION} is already committed and tagged; skipping bookkeeping."
+            exit 0
+          fi
+          git add .claude-plugin/marketplace.json plugin/.claude-plugin/plugin.json \
+            packages/design-token-extractor/package.json \
+            packages/prototype/package.json \
+            plugin/skills/prototype/SKILL.md \
+            plugin/skills/prototype/references/dom-contract-v1.md
+          git commit -m "chore: release v${VERSION} [skip ci]"
+          # main may have moved while this job waited for the website; this
+          # commit only touches version and pin lines, so it rebases cleanly.
+          git pull --rebase origin main
+          git tag "v${VERSION}"
+          git push origin main --tags
 
       - name: Create GitHub Release
         env:

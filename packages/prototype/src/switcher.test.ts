@@ -22,7 +22,8 @@ function makeGroup(
       element: el,
       index: i + 1,
       label: `Variant ${i + 1}`,
-      description: null
+      description: null,
+      jigs: []
     };
   });
   return { container, id: "test-group", variants, activeIndex: 0, config };
@@ -152,6 +153,64 @@ describe("switchVariant (transition: crossfade)", () => {
     initializeVisibility(group);
     switchVariant(group, 1);
     expect(group.variants[0].element.style.display).toBe("none");
+    vi.restoreAllMocks();
+  });
+});
+
+describe("initializeVisibility with a start index", () => {
+  it("shows the start variant and records it as active", () => {
+    const group = makeGroup(3);
+    initializeVisibility(group, 2);
+    expect(group.activeIndex).toBe(2);
+    expect(group.variants[2].element.hasAttribute("data-aitd-active")).toBe(
+      true
+    );
+    expect(group.variants[0].element.style.display).toBe("none");
+  });
+});
+
+describe("switchVariant (transition: slide)", () => {
+  const SLIDE = { ...DEFAULT_CONFIG, transition: "slide" as const };
+
+  it("shifts the outgoing variant opposite to the direction", () => {
+    const group = makeGroup(3, SLIDE);
+    initializeVisibility(group);
+    switchVariant(group, 1);
+    expect(group.variants[0].element.style.transform).toBe("translateX(-16px)");
+    expect(group.variants[1].element.style.transform).toBe("translateX(16px)");
+  });
+
+  it("honours an explicit backwards direction", () => {
+    const group = makeGroup(3, SLIDE);
+    initializeVisibility(group);
+    switchVariant(group, 2, -1);
+    expect(group.variants[2].element.style.transform).toBe("translateX(-16px)");
+  });
+
+  it("clears transform, opacity and transition when done", () => {
+    const group = makeGroup(3, SLIDE);
+    initializeVisibility(group);
+    switchVariant(group, 1);
+    const [prev, next] = [group.variants[0].element, group.variants[1].element];
+    prev.dispatchEvent(new Event("transitionend"));
+    expect(prev.style.display).toBe("none");
+    expect(prev.style.transform).toBe("");
+    expect(next.style.transform).toBe("translateX(0)");
+    next.dispatchEvent(new Event("transitionend"));
+    expect(next.style.transform).toBe("");
+    expect(next.style.opacity).toBe("");
+    expect(next.style.transition).toBe("");
+  });
+
+  it("swaps instantly when prefers-reduced-motion is true", () => {
+    vi.spyOn(window, "matchMedia").mockReturnValue({
+      matches: true
+    } as MediaQueryList);
+    const group = makeGroup(3, SLIDE);
+    initializeVisibility(group);
+    switchVariant(group, 1);
+    expect(group.variants[0].element.style.display).toBe("none");
+    expect(group.variants[1].element.style.transform).toBe("");
     vi.restoreAllMocks();
   });
 });
