@@ -141,4 +141,16 @@ describe("discoverVariantGroups", () => {
 
     expect(groups[0].activeIndex).toBe(0);
   });
+
+  it("parses data-aitd-jigs into custom property names", () => {
+    document.body.innerHTML = `
+      <div data-aitd-variants>
+        <div data-aitd-variant="1" data-aitd-label="A" data-aitd-jigs="--v1-dur, --v1-accent bogus">A</div>
+        <div data-aitd-variant="2" data-aitd-label="B">B</div>
+      </div>
+    `;
+    const [group] = discoverVariantGroups();
+    expect(group.variants[0].jigs).toEqual(["--v1-dur", "--v1-accent"]);
+    expect(group.variants[1].jigs).toEqual([]);
+  });
 });

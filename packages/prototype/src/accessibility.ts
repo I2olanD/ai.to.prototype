@@ -5,7 +5,8 @@ export function announceVariant(
   variant: Variant,
   total: number
 ): void {
-  liveRegion.textContent = `Showing variant: ${variant.label} (${variant.index} of ${total})`;
+  const detail = variant.description ? ` — ${variant.description}` : "";
+  liveRegion.textContent = `Showing variant: ${variant.label} (${variant.index} of ${total})${detail}`;
 }
 
 export function bindKeyboardNavigation(

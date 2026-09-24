@@ -1,3 +1,5 @@
+import { afterEach } from "vitest";
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
@@ -10,4 +12,10 @@ Object.defineProperty(window, "matchMedia", {
     removeEventListener: () => {},
     dispatchEvent: () => false
   })
+});
+
+// Selection and jig values persist in sessionStorage; keep tests independent.
+afterEach(() => {
+  window.sessionStorage.clear();
+  window.history.replaceState(null, "", "/");
 });

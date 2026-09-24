@@ -1,11 +1,18 @@
+import { parseJigNames } from "./jigs";
 import type { Variant, VariantGroup } from "./types";
 import { parseConfig } from "./types";
 
 let idCounter = 0;
 
-function generateId(): string {
+// Derived from DOM position so the id (and the persisted selection keyed on
+// it) survives reloads and HMR re-mounts; the counter only covers detached nodes.
+function generateId(container: HTMLElement): string {
+  const position = Array.from(
+    document.querySelectorAll("[data-aitd-variants]")
+  ).indexOf(container);
+  if (position !== -1) return `aitd-group-${position + 1}`;
   idCounter += 1;
-  return `aitd-group-${idCounter}`;
+  return `aitd-detached-${idCounter}`;
 }
 
 function parseVariant(element: HTMLElement): Variant | null {
@@ -17,13 +24,14 @@ function parseVariant(element: HTMLElement): Variant | null {
 
   const label = element.getAttribute("data-aitd-label") ?? `Variant ${index}`;
   const description = element.getAttribute("data-aitd-description");
+  const jigs = parseJigNames(element.getAttribute("data-aitd-jigs"));
 
-  return { element, index, label, description };
+  return { element, index, label, description, jigs };
 }
 
 function parseVariantGroup(container: HTMLElement): VariantGroup {
   const rawId = container.getAttribute("data-aitd-variants");
-  const id = rawId !== null && rawId.length > 0 ? rawId : generateId();
+  const id = rawId !== null && rawId.length > 0 ? rawId : generateId(container);
 
   const variants: Variant[] = [];
   for (const child of Array.from(container.children)) {

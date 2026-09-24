@@ -3,6 +3,8 @@ export interface Variant {
   index: number;
   label: string;
   description: string | null;
+  /** CSS custom properties exposed as live controls (`data-aitd-jigs`). */
+  jigs: string[];
 }
 
 export interface PickerConfig {

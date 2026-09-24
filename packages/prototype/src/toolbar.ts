@@ -1,4 +1,7 @@
 import { announceVariant, bindKeyboardNavigation } from "./accessibility";
+import { createJigPanel, JIG_PANEL_ID, JIG_PANEL_STYLES } from "./jig-panel";
+import { restoreJigs } from "./jigs";
+import { rememberSelection } from "./persistence";
 import { switchVariant } from "./switcher";
 import type { PickerConfig, VariantGroup } from "./types";
 
@@ -6,11 +9,12 @@ export interface ToolbarHandle {
   host: HTMLElement;
   shadow: ShadowRoot;
   liveRegion: HTMLElement;
+  destroy: () => void;
 }
 
 export function getToolbarStyles(config: PickerConfig): string {
-  const darkVars = `--bg:rgba(30,30,30,.9);--border:rgba(255,255,255,.12);--text:#eee;--muted:#999;--hover:rgba(255,255,255,.07)`;
-  const lightVars = `--bg:rgba(255,255,255,.88);--border:rgba(0,0,0,.1);--text:#111;--muted:#666;--hover:rgba(0,0,0,.05)`;
+  const darkVars = `--bg:rgba(30,30,30,.9);--border:rgba(255,255,255,.12);--text:#eee;--muted:#999;--hover:rgba(255,255,255,.07);color-scheme:dark`;
+  const lightVars = `--bg:rgba(255,255,255,.88);--border:rgba(0,0,0,.1);--text:#111;--muted:#666;--hover:rgba(0,0,0,.05);color-scheme:light`;
   const forced =
     config.theme === "dark"
       ? darkVars
@@ -18,23 +22,44 @@ export function getToolbarStyles(config: PickerConfig): string {
         ? lightVars
         : "";
 
-  return `.w{${forced || lightVars};display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px;padding:6px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);font:12px system-ui,-apple-system,sans-serif;color:var(--text);box-sizing:border-box;user-select:none}${!forced ? `@media(prefers-color-scheme:dark){.w{${darkVars}}}` : ""}.nav-btn{all:unset;cursor:pointer;padding:4px 6px;border-radius:4px;opacity:.6;flex-shrink:0;font-size:14px;line-height:1}.nav-btn:hover{opacity:1;background:var(--hover)}.nav-btn:focus-visible{outline:2px solid var(--text);outline-offset:1px}.nav-btn:disabled{opacity:.2;cursor:default}.label{font-weight:600;white-space:nowrap;width:180px;text-overflow:ellipsis;overflow:hidden;flex-shrink:0}.counter{color:var(--muted);font-size:11px;white-space:nowrap}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.branding{opacity:.4;flex-shrink:0;display:flex;align-items:center}`;
+  // Theme variables live on :host so the toolbar and the jig panel share them.
+  return `:host{${forced || lightVars}}[hidden]{display:none!important}.stack{display:flex;flex-direction:column;align-items:center;gap:6px}.stack.top{flex-direction:column-reverse}.w{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px;padding:6px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);font:12px system-ui,-apple-system,sans-serif;color:var(--text);box-sizing:border-box;user-select:none}${!forced ? `@media(prefers-color-scheme:dark){:host{${darkVars}}}` : ""}.nav-btn{all:unset;cursor:pointer;padding:4px 6px;border-radius:4px;opacity:.6;flex-shrink:0;font-size:14px;line-height:1}.nav-btn:hover{opacity:1;background:var(--hover)}.nav-btn:focus-visible{outline:2px solid var(--text);outline-offset:1px}.nav-btn:disabled{opacity:.2;cursor:default}.label{font-weight:600;white-space:nowrap;width:180px;text-overflow:ellipsis;overflow:hidden;flex-shrink:0}.counter{color:var(--muted);font-size:11px;white-space:nowrap}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.branding{opacity:.4;flex-shrink:0;display:flex;align-items:center}.jig-btn{font-size:11px;font-weight:600;border:1px solid var(--border);padding:3px 8px}.jig-btn[aria-expanded=true]{opacity:1;background:var(--hover)}${JIG_PANEL_STYLES}`;
 }
 
 const POSITIONS: Record<PickerConfig["position"], string> = {
-  "bottom-center": "bottom:16px;left:50%;transform:translateX(-50%)",
-  "bottom-left": "bottom:16px;left:16px",
-  "bottom-right": "bottom:16px;right:16px",
-  "top-center": "top:16px;left:50%;transform:translateX(-50%)"
+  "bottom-center":
+    "bottom:16px;left:50%;transform:translateX(-50%);align-items:center",
+  "bottom-left": "bottom:16px;left:16px;align-items:flex-start",
+  "bottom-right": "bottom:16px;right:16px;align-items:flex-end",
+  "top-center":
+    "top:16px;left:50%;transform:translateX(-50%);align-items:center"
 };
 
-function createHost(config: PickerConfig): HTMLElement {
-  const host = document.createElement("div");
-  host.setAttribute(
+// One fixed dock per position; each group's toolbar host is a flex child, so
+// several groups on one page stack instead of rendering on top of each other.
+const docks = new Map<PickerConfig["position"], HTMLElement>();
+
+function getDock(position: PickerConfig["position"]): HTMLElement {
+  const existing = docks.get(position);
+  if (existing?.isConnected) return existing;
+  const dock = document.createElement("div");
+  dock.setAttribute("data-aitd-dock", position);
+  dock.setAttribute(
     "style",
-    `position:fixed;z-index:2147483640;${POSITIONS[config.position]}`
+    `position:fixed;z-index:2147483640;display:flex;flex-direction:column;gap:8px;${POSITIONS[position]}`
   );
-  return host;
+  document.body.appendChild(dock);
+  docks.set(position, dock);
+  return dock;
+}
+
+function releaseDock(
+  position: PickerConfig["position"],
+  dock: HTMLElement
+): void {
+  if (dock.childElementCount > 0) return;
+  dock.remove();
+  if (docks.get(position) === dock) docks.delete(position);
 }
 
 function buildBranding(): HTMLElement {
@@ -54,11 +79,18 @@ function buildNavButton(label: string, ariaLabel: string): HTMLButtonElement {
   return btn;
 }
 
+function setLabel(label: Element, group: VariantGroup): void {
+  const variant = group.variants[group.activeIndex];
+  label.textContent = variant.label;
+  if (variant.description) label.setAttribute("title", variant.description);
+  else label.removeAttribute("title");
+}
+
 export function updateLabel(shadow: ShadowRoot, group: VariantGroup): void {
   const label = shadow.querySelector(".label");
   const counter = shadow.querySelector(".counter");
   if (label) {
-    label.textContent = group.variants[group.activeIndex].label;
+    setLabel(label, group);
   }
   if (counter) {
     counter.textContent = `${group.activeIndex + 1}/${group.variants.length}`;
@@ -66,7 +98,7 @@ export function updateLabel(shadow: ShadowRoot, group: VariantGroup): void {
 }
 
 export function createToolbar(group: VariantGroup): ToolbarHandle {
-  const host = createHost(group.config);
+  const host = document.createElement("div");
   const shadow = host.attachShadow({ mode: "closed" });
 
   const style = document.createElement("style");
@@ -85,7 +117,7 @@ export function createToolbar(group: VariantGroup): ToolbarHandle {
 
   const label = document.createElement("span");
   label.className = "label";
-  label.textContent = group.variants[group.activeIndex].label;
+  setLabel(label, group);
 
   const counter = document.createElement("span");
   counter.className = "counter";
@@ -96,7 +128,46 @@ export function createToolbar(group: VariantGroup): ToolbarHandle {
   toolbar.appendChild(counter);
   toolbar.appendChild(nextBtn);
 
-  shadow.appendChild(toolbar);
+  const stack = document.createElement("div");
+  stack.className =
+    group.config.position === "top-center" ? "stack top" : "stack";
+
+  // Groups without any jigs keep the original toolbar untouched.
+  let syncJigs = (): void => {};
+  if (group.variants.some((v) => v.jigs.length > 0)) {
+    restoreJigs(group);
+    const jigBtn = buildNavButton("Jigs", "Adjust design tokens");
+    jigBtn.classList.add("jig-btn");
+    jigBtn.setAttribute("aria-controls", JIG_PANEL_ID);
+    jigBtn.setAttribute("aria-expanded", "false");
+
+    let isOpen = false;
+    const setOpen = (open: boolean): void => {
+      isOpen = open;
+      panel.element.hidden = !open;
+      jigBtn.setAttribute("aria-expanded", String(open));
+      if (open) panel.render();
+    };
+    const panel = createJigPanel(group, () => {
+      setOpen(false);
+      jigBtn.focus();
+    });
+
+    jigBtn.addEventListener("click", () => setOpen(!isOpen));
+    syncJigs = () => {
+      const hasJigs = group.variants[group.activeIndex].jigs.length > 0;
+      jigBtn.hidden = !hasJigs;
+      if (!hasJigs) setOpen(false);
+      else if (isOpen) panel.render();
+    };
+    syncJigs();
+
+    toolbar.appendChild(jigBtn);
+    stack.appendChild(panel.element);
+  }
+
+  stack.appendChild(toolbar);
+  shadow.appendChild(stack);
 
   const liveRegion = document.createElement("div");
   liveRegion.setAttribute("aria-live", "polite");
@@ -104,9 +175,11 @@ export function createToolbar(group: VariantGroup): ToolbarHandle {
   liveRegion.className = "sr-only";
   shadow.appendChild(liveRegion);
 
-  const performSwitch = (i: number): void => {
-    switchVariant(group, i);
+  const performSwitch = (i: number, direction?: 1 | -1): void => {
+    switchVariant(group, i, direction);
+    rememberSelection(group, group.variants[group.activeIndex]);
     updateLabel(shadow, group);
+    syncJigs();
     announceVariant(
       liveRegion,
       group.variants[group.activeIndex],
@@ -116,17 +189,24 @@ export function createToolbar(group: VariantGroup): ToolbarHandle {
 
   prevBtn.addEventListener("click", () => {
     const total = group.variants.length;
-    performSwitch((group.activeIndex - 1 + total) % total);
+    performSwitch((group.activeIndex - 1 + total) % total, -1);
   });
 
   nextBtn.addEventListener("click", () => {
     const total = group.variants.length;
-    performSwitch((group.activeIndex + 1) % total);
+    performSwitch((group.activeIndex + 1) % total, 1);
   });
 
   bindKeyboardNavigation(shadow, group, performSwitch);
 
-  document.body.appendChild(host);
+  const position = group.config.position;
+  const dock = getDock(position);
+  dock.appendChild(host);
 
-  return { host, shadow, liveRegion };
+  const destroy = (): void => {
+    host.remove();
+    releaseDock(position, dock);
+  };
+
+  return { host, shadow, liveRegion, destroy };
 }

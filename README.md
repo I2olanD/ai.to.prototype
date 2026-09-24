@@ -103,10 +103,14 @@ Flags: `--variants N` (2–9, default 4), `--style <direction>`, `--framework <n
 
 What it does:
 
-1. Scans your project for framework and design language (Next.js, React, Vue, Svelte, Astro, Tailwind, shadcn/ui, MUI, Chakra, etc.)
-2. Generates structurally distinct variants - different layouts, not just color swaps
-3. Adds a variant picker toolbar so you can flip through them in the browser
-4. After you pick a winner, finalizes by extracting just that variant and stripping all picker scaffolding
+1. Scans your project for framework and design language (Next.js, React, Vue, Svelte, Astro, Tailwind, shadcn/ui, MUI, Chakra, etc.), and uses `.design-tokens/` files or a design-concept brief if you have one
+2. Prints a variant plan (layout, density, emphasis, tone per variant), then generates structurally distinct variants - different layouts, not just color swaps
+3. Puts them on a dedicated prototype route (e.g. `app/prototype/pricing-table/page.tsx`) unless you name a target file, with a variant picker toolbar to flip through them
+4. Exposes each variant's key colors, spacing, and motion values as **Jigs**: live controls in the toolbar with animation replay in slow motion, and a Copy button so the tuned values go back into the code
+5. Screenshots every variant at mobile and desktop width (via Playwright, when available) and fixes layout problems before handing over
+6. Lets you refine the winner, run an explore round of new variants within its direction, or finalize: extract just that variant into a real component and strip all picker scaffolding and the prototype route
+
+The picker remembers your selection across reloads, and `?aitd=<n>` opens variant `n` directly.
 
 ### `/extract-tokens` - pull a design token set
 
@@ -237,7 +241,7 @@ Both packages (`design-token-extractor` and `prototype`) release in lockstep at 
 
 ## Security
 
-The `/prototype` variant picker script is loaded from `https://ai-to-design.com/prototype.min.js` with a Subresource Integrity hash. If your project uses a Content Security Policy, add `https://ai-to-design.com` to `script-src` while prototyping. Remove it after finalizing your chosen variant.
+The `/prototype` variant picker script is loaded from a versioned URL (`https://ai-to-design.com/runtime/<version>/prototype.min.js`) with a Subresource Integrity hash. If your project uses a Content Security Policy, add `https://ai-to-design.com` to `script-src` while prototyping. Remove it after finalizing your chosen variant.
 
 See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy.
 
