@@ -62,11 +62,12 @@ jobs:
           bun-version: latest
 
       # npm is only used for the publish steps: `bun publish` has no --provenance flag.
+      # No registry-url/token: publishing uses npm trusted publishing (OIDC via
+      # id-token: write), configured per package on npmjs.com for this workflow.
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'  # Node LTS (matches mise.toml); prototype requires >=22, CLI >=18
-          registry-url: 'https://registry.npmjs.org'
 
       # Gate the release on tests BEFORE any version bump/tag/publish.
       - name: Test CLI
@@ -109,6 +110,9 @@ jobs:
             plugin/skills/prototype/references/dom-contract-v1.md
           echo "integrity=${HASH}" >> "$GITHUB_OUTPUT"
 
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g "npm@^11.5.1" # trusted publishing needs npm 11.5.1+
+
       - name: Build CLI
         working-directory: packages/design-token-extractor
         run: bun run build
@@ -117,8 +121,6 @@ jobs:
       # Skipping an already-published version keeps re-runs from failing on 409.
       - name: Publish CLI to npm
         working-directory: packages/design-token-extractor
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           NAME="$(bun pm pkg get name | tr -d '"')"
@@ -130,8 +132,6 @@ jobs:
 
       - name: Publish prototype to npm
         working-directory: packages/prototype
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           NAME="$(bun pm pkg get name | tr -d '"')"
@@ -140,6 +140,21 @@ jobs:
           else
             npm publish --provenance
           fi
+
+      # npm accepts a publish minutes before the registry serves the tarball,
+      # and the website sync downloads exactly that tarball, so wait for it.
+      - name: Wait until npm serves the prototype tarball
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          URL="https://registry.npmjs.org/@ai.to.design/prototype/-/prototype-${VERSION}.tgz"
+          for attempt in $(seq 1 40); do
+            if curl -fsSI -o /dev/null "$URL"; then echo "npm serves ${URL}"; exit 0; fi
+            echo "Attempt ${attempt}: not on npm yet"
+            sleep 15
+          done
+          echo "::error::npm did not serve ${URL} within 10 minutes."
+          exit 1
 
       # ai-to-design.com serves /runtime/<version>/prototype.min.js from npm,
       # hash-checked (I2olanD/ai.to.design, .github/workflows/prototype-runtime.yml).
